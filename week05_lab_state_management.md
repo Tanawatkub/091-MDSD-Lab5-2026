@@ -239,10 +239,20 @@ class MyApp extends StatelessWidget {
 ```
 
 > ✅ **Checkpoint 1.1** รันแอปและกดปุ่ม "🤍 บันทึกเป็นรายการโปรด" ที่สินค้าชิ้นใดก็ได้ ทดสอบว่า (ก) ตัวเลขในไอคอนหัวใจที่ AppBar เพิ่มขึ้นถูกต้อง และ (ข) ปุ่มของสินค้าที่กดไปแล้วเปลี่ยนเป็น "❤️ บันทึกแล้ว" และกดซ้ำไม่ได้ ถ่ายภาพหน้าจอที่เห็นทั้งสองอย่างนี้พร้อมกัน แล้วเปิดไฟล์ `item_card.dart` และ `item_list_section.dart` ให้เห็น constructor ที่ต้องรับพารามิเตอร์ส่งต่อ (Prop Drilling) ชัดเจน แนบส่งในรายงาน
+>
+
+
+<img width="2892" height="1640" alt="image" src="https://github.com/user-attachments/assets/d4353b6b-3710-4da1-9c9f-48edcdb4f278" />
+<img width="2254" height="1510" alt="image" src="https://github.com/user-attachments/assets/eb8e4dca-fcae-4d54-adab-a7c2f05d99f1" />
+<img width="2244" height="1492" alt="image" src="https://github.com/user-attachments/assets/e1b9fcca-c5db-4ed1-8a0d-47dc86224246" />
+
+
+
 
 **คำถาม**: ถ้าต้องเพิ่มหน้าจอ `FavoritesPage` ที่ต้องแสดงรายการที่บันทึกไว้ชุดเดียวกัน แต่ถูก push แยกออกไปเป็นอีก Route หนึ่ง จะเกิดปัญหาอะไรกับโค้ดแบบ Prop Drilling นี้ จงเขียนคำตอบสั้น ๆ 
 
 ```text
+จะเกิดปัญหาว่า savedItems และ onSave ส่งข้าม Route ด้วย Prop Drilling ไม่ได้ เพราะ constructor ส่งข้อมูลได้เฉพาะ Widget ที่อยู่ในทรีเดียวกัน ทำให้ FavoritesPage ไม่สามารถเข้าถึง State ของ HomePage ได้โดยตรง และต้องหาวิธีส่งข้อมูลที่ซับซ้อนขึ้น
 
 ```
 
@@ -497,12 +507,18 @@ class HomePage extends StatelessWidget {
 ```
 
 > ✅ **Checkpoint 2.1** รันแอปใหม่ ทดสอบกดบันทึกสินค้าจากหลายจุด แล้วตรวจว่าตัวเลขที่ AppBar อัปเดตถูกต้องทุกครั้ง โดยที่ไฟล์ `item_list_section.dart` และ `item_card.dart` **ไม่มีพารามิเตอร์ savedItems หรือ onSave หลงเหลือใน constructor แล้ว**
+>
+<img width="2900" height="1688" alt="image" src="https://github.com/user-attachments/assets/0f5c1323-d20c-4c8f-81df-33ff7f4f7547" />
+<img width="1135" height="287" alt="image" src="https://github.com/user-attachments/assets/b2b6ae59-3259-4f62-89a9-e0e5836d709b" />
+
 
 > ✅ **Checkpoint 2.2** ทดสอบว่าเมื่อบันทึกสินค้าจากหน้า Home แล้วกดไปหน้า Favorites ตัวเลขและรายการสินค้าตรงกันทันที ลองกดปุ่มถังขยะลบสินค้าออกจากหน้า Favorites แล้วย้อนกลับไปหน้า Home ดูว่าปุ่มของสินค้านั้นกลับมากดซ้ำได้อีกครั้ง ถ่ายภาพหน้าจอทั้งสองหน้าเทียบกันแนบส่ง
 
-```image
-
-```
+``image
+<img width="2894" height="1678" alt="image" src="https://github.com/user-attachments/assets/77e70893-637c-48a5-88db-d1d888750c94" />
+<img width="2902" height="1640" alt="image" src="https://github.com/user-attachments/assets/d0e00ff2-20e7-4ec0-b60a-fa91f4fee130" />
+<img width="2896" height="1646" alt="image" src="https://github.com/user-attachments/assets/133be345-d683-4fb8-843c-6fcd56f50e92" />
+<img width="2902" height="1632" alt="image" src="https://github.com/user-attachments/assets/ee1f6b54-8206-4978-9e18-8dc1689cd913" />
 
 ---
 
@@ -525,6 +541,39 @@ class HomePage extends StatelessWidget {
 บันทึกคำตอบที่ได้จาก Gemini 
 
 ```text
+ในการพัฒนาแอป Flutter การเลือกเครื่องมือจัดการ State (State Management) ที่เหมาะสมกับ "ขอบเขต" (Scope) ของข้อมูลเป็นเรื่องสำคัญมาก เพื่อให้แอปลื่นไหลและโค้ดดูแลรักษาง่าย นี่คือการวิเคราะห์สำหรับทั้ง 3 ฟีเจอร์ครับ:
+
+---
+
+### 1. Dark Mode / Light Mode
+**เครื่องมือที่แนะนำ:** **Riverpod** (หรือ Provider)
+*   **เหตุผล:** ฟีเจอร์นี้เป็น **Global State** ที่ส่งผลกระทบต่อทุก Widget ในแอปพลิเคชัน (App-wide) 
+*   การใช้ Riverpod จะช่วยให้คุณเก็บค่า `ThemeMode` ไว้ที่จุดเดียว และเข้าถึงได้จากทุกหน้าจอโดยไม่ต้องส่งผ่าน Constructor (Prop Drilling) 
+*   Riverpod เหนือกว่า Provider ในจุดนี้ตรงที่มันจัดการเรื่องการอ่านค่าก่อนที่ UI จะ Build เสร็จได้นิ่งกว่า และไม่ต้องพึ่งพา `BuildContext` ในส่วน Logic
+
+### 2. ตัวนับ "มีคนถูกใจ" (ซิงค์ระหว่างหน้า)
+**เครื่องมือที่แนะนำ:** **Riverpod** (หรือ Provider)
+*   **เหตุผล:** นี่คือ **Shared State** ที่ข้อมูลชุดเดียวกันต้องปรากฏและอัปเดตพร้อมกันในหลายหน้า (Multi-screen synchronization)
+*   หากคุณกดถูกใจใน "หน้ารายละเอียด" แล้วกด back กลับมา "หน้ารายการ" ข้อมูลต้องอัปเดตทันที การใช้ Riverpod จะช่วยให้มี **"Source of Truth"** (แหล่งข้อมูลความจริงหนึ่งเดียว) 
+*   แนะนำให้ใช้ `StateNotifierProvider` หรือ `AsyncNotifierProvider` เพื่อจัดการ Logic การอัปเดตค่าไปยัง Backend และสะท้อนกลับมาที่ UI ทุกจุดที่ฟังค่านี้อยู่
+
+### 3. Animation กระพริบของไอคอนหัวใจ (เฉพาะใน Widget)
+**เครื่องมือที่แนะนำ:** **setState** (ใน StatefulWidget)
+*   **เหตุผล:** นี่คือ **Local State** หรือ **Ephemeral State** (State ชั่วคราว) ที่เกิดขึ้นและจบลงภายใน Widget เดียว
+*   Animation Controller มักต้องการ `TickerProvider` (vsync) ซึ่งผูกอยู่กับ Lifecycle ของหน้าจอ/Widget นั้นๆ การใช้ `setState` ร่วมกับ `AnimationController` ภายใน `StatefulWidget` มีประสิทธิภาพสูงสุดและไม่ซับซ้อนเกินความจำเป็น 
+*   ไม่จำเป็นต้องเอา Logic การกระพริบไปไว้ในระดับ Global เพราะหน้าจออื่นไม่จำเป็นต้องรู้ว่าไอคอนในหน้านี้กำลังกระพริบอยู่หรือไม่
+
+---
+
+### สรุปตารางการเลือกใช้
+
+| ฟีเจอร์ | ขอบเขต (Scope) | เครื่องมือที่เหมาะสม | เหตุผลหลัก |
+| :--- | :--- | :--- | :--- |
+| **Dark/Light Mode** | Global (ทั้งแอป) | **Riverpod** | เข้าถึงได้จากทุกที่ จัดการง่าย |
+| **ตัวนับ Like** | Shared (ข้ามหน้า) | **Riverpod** | ข้อมูลซิงค์กัน (Single Source of Truth) |
+| **Animation หัวใจ** | Local (ในปุ่มเดียว) | **setState** | ทำงานเฉพาะจุด ประสิทธิภาพดี ไม่ซับซ้อน |
+
+**คำแนะนำเพิ่มเติม:** สำหรับแอปยุคใหม่ แนะนำให้ใช้ **Riverpod** เป็นหลักแทน Provider ครับ เพราะมีความปลอดภัย (Type-safe) และยืดหยุ่นกว่าในการทดสอบ (Testing) และการจัดการ Logic ที่ซับซ้อนครับ
 
 ```
 
@@ -536,11 +585,47 @@ class HomePage extends StatelessWidget {
 - Gemini แนะนำตรงกับกรอบการตัดสินใจในบทเรียนหรือไม่ มีจุดใดที่ต่างกัน
   
 ```text
+ตรงกัน: Gemini แยกได้ถูกต้องว่า Dark Mode และ Like เป็น Shared State ส่วน Animation เป็น Local State และใช้ setState ได้
+ต่างกัน: บทเรียนแนะนำให้เริ่มจาก Provider ก่อน สำหรับ Shared State แล้วค่อยใช้ Riverpod เมื่อจำเป็นต้องการ Type Safety หรือ Testing ที่เข้มงวด แต่ Gemini แนะนำ Riverpod เป็นหลักทันที
 
 ```
 - หากคำตอบของ Gemini ดูสมเหตุสมผลแต่ยังไม่ครบถ้วน (เช่น ไม่ได้พูดถึงขอบเขตของ Widget) ให้ลองถามคำถามต่อเพื่อขอเหตุผลเพิ่มเติม แล้วบันทึกบทสนทนาไว้ด้วย
-```text
 
+  <img width="1782" height="266" alt="image" src="https://github.com/user-attachments/assets/9fd7b82c-708a-4543-85d8-3284749b2eed" />
+
+Model 11:07 AM
+```text
+แม้ว่าคุณจะยังอยู่ในระดับเริ่มต้นและยังไม่ได้ให้ความสำคัญกับ Unit Test หรือ Type Safety ที่เข้มงวด แต่เหตุผลที่ผมแนะนำ **Riverpod** เป็นทางเลือกหลักนั้นมาจาก **"ความสะดวกในการเขียน" (Ergonomics)** และ **"ลดจุดผิดพลาดที่น่าหงุดหงิด"** ของมือใหม่ครับ
+
+นี่คือเหตุผลสำคัญที่คุณควรพิจารณาเลือกใช้ Riverpod แทน Provider ในโปรเจกต์เรียนรู้นี้:
+
+### 1. อิสระจาก BuildContext (พระเอกของงาน)
+*   **Provider:** คุณจำเป็นต้องมี `context` ถึงจะอ่านข้อมูลได้ ซึ่งสำหรับมือใหม่มักจะเจอปัญหา **"ProviderNotFoundException"** เพราะเรียกใช้ `context` ในจุดที่สูงกว่าจุดที่ประกาศ Provider ไว้ หรือพยายามเรียกใช้นอก `build` method
+*   **Riverpod:** คุณสามารถอ่านค่าจาก Provider ได้จาก **ทุกที่** (ผ่าน `ref`) ไม่ว่าจะเป็นใน Logic คลาส, ในฟังก์ชันแยก หรือแม้แต่ตอนเปลี่ยนหน้าจอ โดยไม่ต้องกังวลเรื่องตำแหน่งใน Widget Tree ทำให้การจัดการ Dark Mode (ที่ต้องเปลี่ยนจากหน้า Settings) ทำได้ง่ายกว่ามาก
+
+### 2. ไม่ต้องกังวลเรื่อง "ลำดับ" การวาง Widget
+*   ใน Provider คุณต้องนำ `ChangeNotifierProvider` ไปครอบไว้บนสุดของแอป (เหนือ `MaterialApp`) หากลืมหรือวางผิดที่ แอปจะพังทันที
+*   Riverpod ใช้ `ProviderScope` ครอบจุดเดียวที่ `main.dart` แล้วจบเลย หลังจากนั้นคุณจะประกาศ Provider ไว้ในไฟล์ไหนก็ได้ และเรียกใช้ได้ทันที มันจะจัดการเรื่องการสร้างและทำลายข้อมูลให้คุณเองอัตโนมัติ
+
+### 3. การจัดการข้อมูลแบบ Async ที่ "ฉลาด" กว่า (สำหรับตัวนับ Like)
+*   การซิงค์ตัวนับ Like ระหว่างหน้าจอมักเกี่ยวข้องกับการดึงข้อมูลจาก Database/API
+*   Riverpod มี `FutureProvider` และ `AsyncValue` ที่ช่วยจัดการสถานะ **Loading, Error, Data** ให้เสร็จสรรพในตัวเดียว ซึ่งใน Provider คุณต้องมานั่งเขียน `bool isLoading = true` และ `notifyListeners()` เองทุกครั้ง ซึ่งมีโอกาสเกิด Bug ได้ง่ายกว่าสำหรับคนหัดเขียน
+
+### 4. คำแนะนำจาก "ผู้สร้างคนเดียวกัน"
+*   **Rémi Rousselet** คือผู้พัฒนาทั้ง Provider และ Riverpod เขาได้สร้าง Riverpod ขึ้นมาเพื่อ **"แก้ปัญหาเชิงโครงสร้าง"** ที่เขาพบใน Provider และไม่สามารถแก้ได้หากไม่รื้อระบบใหม่ 
+*   ดังนั้นการเรียน Riverpod ในตอนนี้คือการเรียนรู้ **"มาตรฐานใหม่"** ที่จะถูกใช้ไปอีกนานใน Ecosystem ของ Flutter ครับ
+
+### 5. ลด Boilerplate (โค้ดส่วนเกิน)
+*   ด้วยการมาของ `riverpod_generator` (โค้ดอัตโนมัติ) คุณจะเขียนโค้ดน้อยลงมาก ตัวอย่างเช่น การประกาศ Provider สำหรับ Dark Mode ใน Riverpod ยุคใหม่จะสั้นและอ่านง่ายกว่า Provider แบบดั้งเดิมพอสมควร
+
+**สรุปสั้น ๆ:**
+ผมแนะนำ Riverpod ไม่ใช่เพราะมัน "เทพ" กว่าในเรื่องงานระดับโปรอย่างเดียว แต่เพราะมัน **"เขียนง่ายกว่าและปวดหัวน้อยกว่า"** สำหรับมือใหม่ที่อยากโฟกัสกับการทำฟีเจอร์แอปให้เสร็จ โดยไม่ต้องมาคอยนั่งไล่ Bug เรื่อง `context` หรือลำดับ Widget ครับ
+
+```
+```text
+รอบสอง สมเหตุสมผลขึ้น แต่ยังไม่ตรงกับบทเรียนทั้งหมด เพราะ Gemini ยังแนะนำ Riverpod ก่อน Provider
+
+สรุป: ควรยึดบทเรียนเป็นหลัก → เริ่มจาก Provider ก่อน แล้วค่อยใช้ Riverpod เมื่อจำเป็นต้องการ Type Safety หรือ Testing
 
 ```
 
@@ -692,8 +777,24 @@ class HomePage extends ConsumerWidget {
 ```
 
 > ✅ **Checkpoint 4.1** รันแอปด้วย `flutter run` (หรือกด F5 ใน VS Code) แล้วทดสอบกดปุ่ม "บันทึก" ที่สินค้าชิ้นใดก็ได้ ตรวจว่าตัวเลข ❤️ ที่ AppBar เพิ่มขึ้นถูกต้อง ถ่ายภาพหน้าจอแนบส่ง
+>
+<img width="2814" height="1676" alt="image" src="https://github.com/user-attachments/assets/88999e6e-c0d4-44ca-8659-901b6d944025" />
+
 
 > ✅ **Checkpoint 4.2** เขียนตารางเปรียบเทียบสั้น ๆ ว่าตอนแปลงจาก Provider เป็น Riverpod ต้องเปลี่ยนอะไรบ้าง (เช่น `ChangeNotifier` → `StateNotifier`, `StatelessWidget` → `ConsumerWidget`, `context.watch` → `ref.watch`) อย่างน้อย 4 คู่เทียบ
+>
+> 
+
+# Checkpoint 4.2: ตารางเปรียบเทียบ Provider vs Riverpod
+
+| Provider | Riverpod | ตรงกับที่เขียนในโค้ดจริงตรงไหน |
+|---|---|---|
+| `ChangeNotifier` | `StateNotifier` | `FavoritesModel extends ChangeNotifier` → `FavoritesNotifier extends StateNotifier<List<Item>>` |
+| `ChangeNotifierProvider` | `StateNotifierProvider` | การลงทะเบียนใน `main.dart` vs `favorites_notifier.dart` |
+| `StatelessWidget` | `ConsumerWidget` | `class HomePage extends StatelessWidget` → `class HomePage extends ConsumerWidget` |
+| `context.watch()` | `ref.watch()` | อ่านค่า `FavoritesModel`/`favoritesProvider` เพื่อ rebuild UI |
+| `context.read()` | `ref.read()` | เรียก `.add(item)` ตอนกดปุ่ม |
+| `BuildContext` | `WidgetRef` | พารามิเตอร์ที่ต้องส่งเข้า `build()` เพื่อเข้าถึง state |
 
 ---
 
@@ -719,12 +820,28 @@ class HomePage extends ConsumerWidget {
 - ต้องใช้ `context.read` หรือ `context.watch` ให้ถูกต้องตามหลักการ และอธิบายเหตุผลการเลือกไว้ใน `notes.md`
 - ปุ่มต้องแสดงเฉพาะเมื่อมีรายการโปรดอย่างน้อย 1 รายการเท่านั้น (ถ้ารายการว่างอยู่แล้วไม่ต้องแสดงปุ่มนี้)
 
+<img width="2888" height="1632" alt="image" src="https://github.com/user-attachments/assets/e01538f8-6f91-4f9c-b577-2d7209120f87" />
+<img width="2898" height="1662" alt="image" src="https://github.com/user-attachments/assets/16795414-6f29-4868-9325-6d65ac7da25f" />
+<img width="2888" height="1618" alt="image" src="https://github.com/user-attachments/assets/375b1c6d-cf1f-4b7a-ba93-8fd1233a49f1" />
+<img width="2900" height="1618" alt="image" src="https://github.com/user-attachments/assets/9a15f92f-b094-4df2-b39b-2c3e36200471" />
+
+
 ### โจทย์ที่ 3 (ท้าทายเพิ่ม ไม่บังคับ)
 
 ทำโจทย์ที่ 1 และ 2 ซ้ำอีกครั้งในโปรเจกต์ทดลอง Riverpod (ส่วนที่ 4) เพื่อฝึกโยกความสามารถเดียวกันข้ามเครื่องมือ State Management สองแบบ
 
 > ✅ **Checkpoint 5.1** ถ่ายภาพหน้าจอฟีเจอร์ค้นหาที่กรองสินค้าได้ถูกต้อง และภาพ Dialog ยืนยันการล้างรายการโปรด เขียนอธิบายเหตุผลการเลือกชนิด State ของทั้งสองฟีเจอร์
-```text
+>
+<img width="2784" height="1662" alt="image" src="https://github.com/user-attachments/assets/ba99afee-9ce1-4e1a-b2e0-873e4b0075d2" />
+<img width="2802" height="1660" alt="image" src="https://github.com/user-attachments/assets/97409aa1-f8f9-4599-8b15-a1b5f3b8e314" />
+<img width="2778" height="1634" alt="image" src="https://github.com/user-attachments/assets/1337efaa-152a-45dd-9f17-a573edc0f920" />
+<img width="2792" height="1658" alt="image" src="https://github.com/user-attachments/assets/20e0cb86-13ea-4476-938e-7cc0fffe4618" />
 
+
+```text
+ค้นหาสินค้า: ใช้ Ephemeral State + setState เพราะใช้แค่ใน HomePage ไม่ต้องแชร์กับหน้าอื่น
+ล้างรายการโปรด: ใช้ App State + Provider/Riverpod เพราะรายการโปรดใช้ร่วมกันหลายหน้า
+watch → ดูว่ามีรายการหรือไม่แบบอัตโนมัติ
+read → เรียก clear() ตอนกดยืนยันเพียงครั้งเดียว
 
 ```
