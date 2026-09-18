@@ -17,6 +17,29 @@ class ItemCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
+        leading: SizedBox(
+          width: 56,
+          height: 56,
+          child: Image.network(
+            item.imageUrl,
+            fit: BoxFit.contain,
+            // แสดง spinner ระหว่างรอโหลดรูปจากเน็ต
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              );
+            },
+            // กันแอปพังถ้าโหลดรูปไม่สำเร็จ (URL เสีย/ไม่มีเน็ต) ให้ขึ้นไอคอนแทน
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.broken_image_outlined, color: Colors.grey);
+            },
+          ),
+        ),
         title: Text(item.title),
         subtitle: Text('฿${item.price.toStringAsFixed(0)}'),
         trailing: ElevatedButton(

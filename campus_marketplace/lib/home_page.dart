@@ -2,33 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'models/item.dart';
 import 'models/favorites_model.dart';
+import 'repositories/item_repository.dart'; // ItemRepository (Interface) จากขั้นตอนที่ 7.3
 import 'widgets/item_list_section.dart';
 import 'favorites_page.dart';
 
 class HomePage extends StatefulWidget {
-  // ต้องเปลี่ยนกลับเป็น StatefulWidget เพราะตอนนี้มี Ephemeral State (คำค้นหา) ที่ต้องเก็บไว้เอง
-  const HomePage({super.key});
+  final ItemRepository repository;
+  const HomePage({super.key, required this.repository});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  // คำค้นหาเป็น Ephemeral State: มีแค่หน้านี้หน้าเดียวที่ต้องรู้ค่านี้
-  // ไม่มีหน้าจออื่นในแอปต้องอ่านค่านี้ จึงใช้ setState ธรรมดาพอ ไม่ต้องใช้ Provider
   String _searchQuery = '';
+  late Future<List<Item>> _itemsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemsFuture = widget.repository.getItems();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // กรอง catalog ด้วยคำค้นหา โดยไม่สนตัวพิมพ์เล็ก-ใหญ่
-    final filteredCatalog = catalog
-        .where((item) =>
-            item.title.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Campus Marketplace'),
+        // คงไอคอนหัวใจ + ตัวนับรายการโปรดจากสัปดาห์ที่ 5 ไว้ ไม่แตะต้อง
         actions: [
           IconButton(
             icon: Row(
@@ -56,7 +57,6 @@ class _HomePageState extends State<HomePage> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                // setState แค่ในหน้านี้ ไม่กระทบ widget อื่นนอกทรีของ HomePage
                 setState(() {
                   _searchQuery = value;
                 });
@@ -64,7 +64,26 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-            child: ItemListSection(catalog: filteredCatalog),
+            child: FutureBuilder<List<Item>>(
+              future: _itemsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'),
+                  );
+                }
+                final items = snapshot.data ?? [];
+                final filtered = items
+                    .where((item) => item.title
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase()))
+                    .toList();
+                return ItemListSection(catalog: filtered);
+              },
+            ),
           ),
         ],
       ),

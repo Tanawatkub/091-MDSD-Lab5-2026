@@ -1,14 +1,35 @@
 class Item {
-  final String id;
+  final int id;
   final String title;
   final double price;
+  final String description;
+  final String category;
+  final String imageUrl;
 
-  const Item({required this.id, required this.title, required this.price});
+  const Item({
+    required this.id,
+    required this.title,
+    required this.price,
+    required this.description,
+    required this.category,
+    required this.imageUrl,
+  });
+
+  factory Item.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as int;
+    final title = json['title'] as String;
+    final price = (json['price'] as num).toDouble();
+    final description = json['description'] as String;
+    final category = json['category'] as String;
+    final imageUrl = json['image'] as String;
+
+    return Item(
+      id: id,
+      title: title,
+      price: price,
+      description: description,
+      category: category,
+      imageUrl: imageUrl,
+    );
+  }
 }
-
-// ข้อมูลจำลอง (mock) ไว้ใช้ก่อน สัปดาห์ที่ 6 จะเปลี่ยนมาดึงจาก API จริงแทนลิสต์นี้
-final catalog = <Item>[
-  const Item(id: 'i1', title: 'หนังสือ Calculus มือสอง', price: 150),
-  const Item(id: 'i2', title: 'หูฟังไร้สาย (สภาพดี 90%)', price: 450),
-  const Item(id: 'i3', title: 'โคมไฟตั้งโต๊ะหอพัก', price: 120),
-];

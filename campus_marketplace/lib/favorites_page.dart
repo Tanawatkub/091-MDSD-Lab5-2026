@@ -56,6 +56,27 @@ class FavoritesPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = favorites.items[index];
                 return ListTile(
+                  leading: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Image.network(
+                      item.imageUrl,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const Center(
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.broken_image_outlined, color: Colors.grey);
+                      },
+                    ),
+                  ),
                   title: Text(item.title),
                   subtitle: Text('฿${item.price.toStringAsFixed(0)}'),
                   trailing: IconButton(
