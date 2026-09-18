@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'models/favorites_model.dart';
+import 'models/cart_model.dart';
 
-class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({super.key});
+class CheckoutPage extends StatelessWidget {
+  const CheckoutPage({super.key});
 
-  // แยกฟังก์ชันแสดง Dialog ยืนยัน เพื่อให้โค้ดใน build() อ่านง่าย
   void _showClearConfirmDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('ล้างรายการโปรดทั้งหมด?'),
-        content: const Text('การกระทำนี้จะลบสินค้าที่บันทึกไว้ทั้งหมด และไม่สามารถย้อนกลับได้'),
+        title: const Text('ล้างตะกร้าทั้งหมด?'),
+        content: const Text('การกระทำนี้จะลบสินค้าในตะกร้าทั้งหมด และไม่สามารถย้อนกลับได้'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
@@ -19,8 +18,7 @@ class FavoritesPage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              // .read เพราะเป็นคำสั่งครั้งเดียวตอนกดยืนยัน ไม่ต้องการสมัครรับการอัปเดตซ้ำ
-              context.read<FavoritesModel>().clear();
+              context.read<CartModel>().clear();
               Navigator.of(dialogContext).pop();
             },
             child: const Text('ล้างทั้งหมด', style: TextStyle(color: Colors.red)),
@@ -32,29 +30,26 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // .watch เพราะหน้านี้ต้อง rebuild ทุกครั้งที่รายการโปรดเปลี่ยน
-    // (ทั้งตอนลบทีละชิ้น และตอนล้างทั้งหมด เพื่อให้ปุ่มล้างหายไปเองเมื่อ list ว่าง)
-    final favorites = context.watch<FavoritesModel>();
+    final cart = context.watch<CartModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('รายการโปรดของฉัน'),
+        title: const Text('ตะกร้าสินค้า'),
         actions: [
-          // แสดงปุ่มเฉพาะเมื่อมีรายการโปรดอย่างน้อย 1 รายการ
-          if (favorites.itemCount > 0)
+          if (cart.itemCount > 0)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined),
-              tooltip: 'ล้างรายการโปรดทั้งหมด',
+              tooltip: 'ล้างตะกร้าทั้งหมด',
               onPressed: () => _showClearConfirmDialog(context),
             ),
         ],
       ),
-      body: favorites.items.isEmpty
-          ? const Center(child: Text('ยังไม่มีสินค้าที่บันทึกไว้'))
+      body: cart.items.isEmpty
+          ? const Center(child: Text('ยังไม่มีสินค้าในตะกร้า'))
           : ListView.builder(
-              itemCount: favorites.items.length,
+              itemCount: cart.items.length,
               itemBuilder: (context, index) {
-                final item = favorites.items[index];
+                final item = cart.items[index];
                 return ListTile(
                   leading: SizedBox(
                     width: 48,
@@ -81,14 +76,14 @@ class FavoritesPage extends StatelessWidget {
                   subtitle: Text('฿${item.price.toStringAsFixed(0)}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
-                    onPressed: () => context.read<FavoritesModel>().remove(item),
+                    onPressed: () => context.read<CartModel>().remove(item),
                   ),
                 );
               },
             ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(12),
-        child: Text('มูลค่ารวม: ฿${favorites.totalValue.toStringAsFixed(0)}'),
+        child: Text('มูลค่ารวม: ฿${cart.totalValue.toStringAsFixed(0)}'),
       ),
     );
   }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'models/item.dart';
-import 'models/favorites_model.dart';
-import 'repositories/item_repository.dart'; // ItemRepository (Interface) จากขั้นตอนที่ 7.3
+import 'models/cart_model.dart';
+import 'repositories/item_repository.dart';
 import 'widgets/item_list_section.dart';
-import 'favorites_page.dart';
+import 'checkout_page.dart';
 
 class HomePage extends StatefulWidget {
   final ItemRepository repository;
@@ -29,19 +29,15 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Campus Marketplace'),
-        // คงไอคอนหัวใจ + ตัวนับรายการโปรดจากสัปดาห์ที่ 5 ไว้ ไม่แตะต้อง
         actions: [
           IconButton(
-            icon: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.favorite),
-                Text(' ${context.watch<FavoritesModel>().itemCount}'),
-              ],
+            icon: Badge(
+              label: Text('${context.watch<CartModel>().itemCount}'),
+              child: const Icon(Icons.shopping_cart),
             ),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const FavoritesPage()),
+              MaterialPageRoute(builder: (_) => const CheckoutPage()),
             ),
           ),
         ],
@@ -71,9 +67,7 @@ class _HomePageState extends State<HomePage> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'),
-                  );
+                  return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
                 }
                 final items = snapshot.data ?? [];
                 final filtered = items
